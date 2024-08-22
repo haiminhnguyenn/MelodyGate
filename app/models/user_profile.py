@@ -10,6 +10,7 @@ class UserProfile(db.Model):
     email: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(100), nullable=False)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
+    bio: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     gender: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     birthday: Mapped[Optional[str]] = mapped_column(String(15), nullable=True)
     location: Mapped[Optional[str]] = mapped_column(String(250), nullable=True)

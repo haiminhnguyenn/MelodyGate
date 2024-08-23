@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from itsdangerous import URLSafeTimedSerializer as Serializer
 from typing import Optional
 from app.extensions import login_manager
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 class UserProfile(UserMixin, db.Model):
@@ -13,7 +14,7 @@ class UserProfile(UserMixin, db.Model):
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String(100), nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(128), nullable=False)
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
     name: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
@@ -67,6 +68,20 @@ class UserProfile(UserMixin, db.Model):
         self.confirmed = True
         db.session.commit()
         return True
+    
+    
+    @property
+    def password(self):
+        raise AttributeError("password is not a readable attribute")
+    
+    
+    @password.setter
+    def password(self, password):
+        self.password_hash = generate_password_hash(password)
+    
+    
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
     
 
 login_manager.user_loader

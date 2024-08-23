@@ -3,7 +3,7 @@ from flask import request, jsonify
 from app.extensions import db
 from app.models.user_profile import UserProfile
 from app.email import send_email
-from flask_login import login_required, current_user
+from flask_login import login_required, current_user, logout_user
 
 
 @auth.route("/register", methods=["POST"])
@@ -57,4 +57,34 @@ def confirm(token):
    
     return jsonify({
         "message": "You have confirmed your account. Thanks!"
+    }), 200
+
+
+@auth.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    identifier = data.get("identifier")
+    password = data.get("password")
+    
+    user = db.session.execute(
+        db.select(UserProfile)
+        .where(UserProfile.email == identifier or UserProfile.username == identifier)
+    ).scalar()
+    
+    if user is not None and user.verify_password(password):
+        return jsonify({
+            "message": "Log in successfully!"
+        }), 200
+    
+    return jsonify({
+        "message": "Invalid username or password."
+    }), 401
+    
+
+@auth.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return jsonify({
+        "message": "You have been logged out."
     }), 200

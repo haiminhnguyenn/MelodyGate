@@ -3,6 +3,7 @@ from flask import request, jsonify
 from app.extensions import db
 from app.models.user_profile import UserProfile
 from app.email import send_email
+from flask_login import login_required, current_user
 
 
 @auth.route("/register", methods=["POST"])
@@ -42,5 +43,18 @@ def register():
     
 
 @auth.route("/confirm/<token>")
+@login_required
 def confirm(token):
-    pass
+    if current_user.confirmed:
+        return jsonify({
+            "message": "This account has been already confirmed. You don't need to confirm anymore."
+        }), 200
+    
+    if not current_user.confirm(token):
+        return jsonify({
+            "message": "The confirmation link is invalid or has expired."
+        }), 400
+   
+    return jsonify({
+        "message": "You have confirmed your account. Thanks!"
+    }), 200

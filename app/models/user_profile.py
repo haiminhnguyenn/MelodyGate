@@ -1,12 +1,14 @@
 from flask import current_app as app
 from app.extensions import db
+from flask_login import UserMixin
 from sqlalchemy import String, Integer, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 from itsdangerous import URLSafeTimedSerializer as Serializer
 from typing import Optional
+from app.extensions import login_manager
 
 
-class UserProfile(db.Model):
+class UserProfile(UserMixin, db.Model):
     __tablename__ = "user_profile"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -25,7 +27,7 @@ class UserProfile(db.Model):
         user = db.session.execute(
             db.select(UserProfile)
             .where(UserProfile.email == self.email)
-        )
+        ).scalar()
         if user:
             return True
         
@@ -36,7 +38,7 @@ class UserProfile(db.Model):
         user = db.session.execute(
             db.select(UserProfile)
             .where(UserProfile.username == self.username)
-        )
+        ).scalar()
         if user:
             return True
         
@@ -51,3 +53,22 @@ class UserProfile(db.Model):
             max_age=expiration
         )
     
+    
+    def confirm(self, token):
+        s = Serializer(app.config["SECRET_KEY"])
+        try:
+            data = s.loads(token)
+        except:
+            return False
+        
+        if data.get("confirm") != self.id:
+            return False
+        
+        self.confirmed = True
+        db.session.commit()
+        return True
+    
+
+login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(UserProfile, int(user_id))

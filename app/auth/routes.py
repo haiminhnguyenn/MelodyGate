@@ -3,7 +3,8 @@ from flask import request, jsonify
 from app.extensions import db
 from app.models.user_profile import UserProfile
 from app.email import send_email
-from flask_login import login_required, current_user, logout_user
+from flask_login import login_required, current_user, login_user, logout_user
+from datetime import timedelta
 
 
 @auth.route("/register", methods=["POST"])
@@ -72,6 +73,7 @@ def login():
     ).scalar()
     
     if user is not None and user.verify_password(password):
+        login_user(user, remember=data.get("remember"), duration=timedelta(days=30))
         return jsonify({
             "message": "Log in successfully!"
         }), 200

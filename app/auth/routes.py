@@ -1,11 +1,12 @@
 from app.auth import auth
-from flask import request, jsonify
+from flask import request, jsonify, current_app as app
 from app.extensions import db
 from app.models.user_profile import UserProfile
 from app.email import send_email
 from flask_login import login_required, current_user, login_user, logout_user
 from datetime import timedelta
 from flask_cors import cross_origin
+from itsdangerous import URLSafeTimedSerializer as Serializer
 
 
 @auth.route("/register", methods=["POST"])
@@ -107,7 +108,12 @@ def login():
         return jsonify({
             "message": "Log in successfully!",
             "success": True,
-            "user": {"id": user.id, "email": user.email, "username": user.username}
+            "user": {
+                "id": user.id, 
+                "email": user.email, 
+                "username": user.username, 
+                "confirmed": user.confirmed
+            }
         }), 200
     
     return jsonify({
@@ -136,13 +142,13 @@ def password_reset_request():
         .where(UserProfile.email == email)
     )
     
-    if not user:
+    if user is None:
         return jsonify({
             "message": "That address is either invalid, not a verified email or is not associated with a personal user account.",
             "success": False
-        })
+        }), 404
     
-    token = user.generate_confirmation_token()
+    token = user.generate_reset_token()
     send_email(
         email,
         "Reset Your Password",
@@ -153,11 +159,35 @@ def password_reset_request():
     
     return jsonify({
         "message": "An email with instructions to reset your password has been sent to you",
-        "sucess": True
-    })
+        "success": True
+    }), 200
 
 
-@auth.route("/password_reset/<token>")
+@auth.route("/password_reset/<token>", methods=["POST"])
 @cross_origin
-def password_reset():
-    pass
+def password_reset(token):
+    new_password = request.get_json().get("new_password")
+    
+    s = Serializer(app.config["SECRET_KEY"])
+    
+    try:
+        user_id = s.loads(token, salt="reset-salt")["reset"]
+    except Exception:
+        return jsonify({
+            "message": "The token is invalid or has expired.",
+            "success": False
+        }), 400
+    
+    user = db.session.get(UserProfile, user_id)
+    
+    if user is None:
+        return jsonify({
+            "message": "User does not exist.",
+            "success": False
+        }), 404
+
+    user.reset_password(new_password)
+    return jsonify({
+        "message": "Your password has been updated.",
+        "success": True
+    }), 200

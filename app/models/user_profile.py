@@ -66,8 +66,24 @@ class UserProfile(UserMixin, db.Model):
             return False
         
         self.confirmed = True
+        db.session.add(self)
         db.session.commit()
         return True
+    
+    
+    def generate_reset_token(self, expiration=3600):
+        s = Serializer(app.config["SECRET_KEY"])
+        return s.dumps(
+            {"reset": self.id}, 
+            salt="reset-salt", 
+            max_age=expiration
+        )
+        
+    
+    def reset_password(self, new_password):
+        self.password = new_password
+        db.session.add(self)
+        db.session.commit()
     
     
     @property

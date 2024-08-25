@@ -12,8 +12,16 @@ def create_app(class_config=Config):
     db.init_app(app)
     mail.init_app(app)
     login_manager.init_app(app)
-    cors.init_app(app)
+    cors.init_app(app, resources={
+        r"/*": {
+            "origins": "http://localhost:3000",
+            "methods": ["GET", "POST", "PUT", "DELETE"]
+        }
+    })
     
     celery.conf.update(app.config)
+    
+    from app.auth import auth as auth_blueprint
+    app.register_blueprint(auth_blueprint, url_prefix="/auth")
     
     return app

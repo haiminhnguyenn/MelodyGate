@@ -1,5 +1,5 @@
 from app.auth import auth
-from flask import request, jsonify, current_app as app
+from flask import request, jsonify, flash, redirect, current_app as app
 from app.extensions import db
 from app.models.user_profile import UserProfile
 from app.email import send_email
@@ -55,21 +55,14 @@ def register():
 @cross_origin
 def confirm(token):
     if current_user.confirmed:
-        return jsonify({
-            "message": "This account has been already confirmed. You don't need to confirm anymore.",
-            "success": True
-        }), 200
+        return redirect("http://localhost:3000/")
     
-    if not current_user.confirm(token):
-        return jsonify({
-            "message": "The confirmation link is invalid or has expired.",
-            "success": False
-        }), 400
-   
-    return jsonify({
-        "message": "You have confirmed your account. Thanks!",
-        "success": True
-    }), 200
+    if current_user.confirm(token):
+        flash("You have confirmed your account. Thanks!")
+    else:
+        flash("The confirmation link is invalid or has expired.")
+        
+    return redirect("http://localhost:3000/")
     
 
 @auth.route("/confirm")

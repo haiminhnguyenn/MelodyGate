@@ -17,6 +17,7 @@ class UserProfile(UserMixin, db.Model):
     password_hash: Mapped[str] = mapped_column(String(128), nullable=False)
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
+    role: Mapped[str] = mapped_column(String(15), default="user")
     name: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     bio: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     gender: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)

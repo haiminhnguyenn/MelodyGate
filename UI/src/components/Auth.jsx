@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './Auth.css'
-import Register from './assets/components/Register'
-import Login from './assets/components/Login'
+import Register from './sub-components/Register'
+import Login from './sub-components/Login'
 import 'https://kit.fontawesome.com/4a24fc7d8b.js'
 import { useNavigate } from "react-router-dom"
 

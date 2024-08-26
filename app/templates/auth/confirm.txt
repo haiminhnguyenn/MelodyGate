@@ -1,0 +1,13 @@
+Dear {{ user.username }},
+
+Welcome to Melody Gate!
+
+To confirm your account please click on the following link:
+
+http://localhost:3000/password_reset/{{ token }}
+
+Sincerely,
+
+The Melody Gate Team
+
+Note: replies to this email address are not monitored.

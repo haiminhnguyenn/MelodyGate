@@ -1,10 +1,15 @@
 from flask_sqlalchemy import SQLAlchemy
-from app.models.base import Base
+from sqlalchemy.orm import DeclarativeBase
 from flask_mail import Mail
 from flask_login import LoginManager
 from flask_cors import CORS
 
+
+class Base(DeclarativeBase):
+  pass
+
+
 db = SQLAlchemy(model_class=Base)
-mail = Mail()
 login_manager = LoginManager()
+mail = Mail()
 cors = CORS()

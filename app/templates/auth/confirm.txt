@@ -4,7 +4,7 @@ Welcome to Melody Gate!
 
 To confirm your account please click on the following link:
 
-http://localhost:3000/password_reset/{{ token }}
+{{ url_for('auth.confirm', token=token, _external=True) }}
 
 Sincerely,
 

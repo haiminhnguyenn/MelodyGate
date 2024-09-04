@@ -1,7 +1,7 @@
 from app.auth import auth
 from flask import request, jsonify, flash, redirect, current_app as app
 from app.extensions import db
-from app.models.user_profile import UserProfile
+from app.models import UserProfile
 from app.email import send_email
 from flask_login import login_required, current_user, login_user, logout_user
 from datetime import timedelta
@@ -10,7 +10,6 @@ from itsdangerous import URLSafeTimedSerializer as Serializer
 
 
 @auth.route("/register", methods=["POST"])
-@cross_origin
 def register():
     data = request.get_json()
     
@@ -52,7 +51,6 @@ def register():
 
 @auth.route("/confirm/<token>")
 @login_required
-@cross_origin
 def confirm(token):
     if current_user.confirmed:
         return redirect("http://localhost:3000/")
@@ -67,7 +65,6 @@ def confirm(token):
 
 @auth.route("/confirm")
 @login_required
-@cross_origin
 def resend_confirmation():
     token = current_user.generate_confirmation_token()
     send_email(
@@ -85,7 +82,6 @@ def resend_confirmation():
 
 
 @auth.route("/login", methods=["POST"])
-@cross_origin
 def login():
     data = request.get_json()
     identifier = data.get("identifier")
@@ -117,7 +113,6 @@ def login():
 
 @auth.route("/logout")
 @login_required
-@cross_origin
 def logout():
     logout_user()
     return jsonify({
@@ -127,7 +122,6 @@ def logout():
 
 
 @auth.route("/password_reset", methods=["POST"])
-@cross_origin
 def password_reset_request():
     email = request.get_json().get("email")
     user = db.session.execute(
@@ -157,7 +151,6 @@ def password_reset_request():
 
 
 @auth.route("/password_reset/<token>", methods=["POST"])
-@cross_origin
 def password_reset(token):
     new_password = request.get_json().get("new_password")
     

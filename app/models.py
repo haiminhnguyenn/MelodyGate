@@ -13,8 +13,8 @@ class UserProfile(UserMixin, db.Model):
     __tablename__ = "user_profile"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    email: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
-    password_hash: Mapped[str] = mapped_column(String(128), nullable=False)
+    email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    password_hash: Mapped[str] = mapped_column(String, nullable=False)
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
     role: Mapped[str] = mapped_column(String(15), default="user")
@@ -47,12 +47,11 @@ class UserProfile(UserMixin, db.Model):
         return False
     
     
-    def generate_confirmation_token(self, expiration=3600):
+    def generate_confirmation_token(self):
         s = Serializer(app.config["SECRET_KEY"])
         return s.dumps(
             {"confirm": self.id}, 
-            salt="confirm-salt", 
-            max_age=expiration
+            salt="confirm-salt"
         )
     
     
@@ -100,7 +99,7 @@ class UserProfile(UserMixin, db.Model):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
     
-
-login_manager.user_loader
+    
+@login_manager.user_loader
 def load_user(user_id):
     return db.session.get(UserProfile, int(user_id))

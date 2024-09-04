@@ -1,0 +1,11 @@
+flask
+flask_sqlalchemy
+sqlalchemy
+psycopg2-binary
+flask_mail
+flask_login
+flask_cors
+requests
+celery
+itsdangerous
+werkzeug
